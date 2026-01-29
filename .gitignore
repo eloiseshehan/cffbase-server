@@ -1,5 +1,5 @@
 node_modules/
 *.db
-.db-journal
+*.db-journal
 *.log
 .DS_Store
