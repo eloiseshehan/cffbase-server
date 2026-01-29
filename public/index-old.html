@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFFBase - Multi-User Seeding Records</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Crimson+Pro:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --earth-dark: #2c3e28;
+            --earth-medium: #4a6741;
+            --wheat: #d4b896;
+            --cream: #f5f1e8;
+            --shadow: rgba(44, 62, 40, 0.1);
+        }
+        body {
+            font-family: 'Crimson Pro', serif;
+            background: linear-gradient(135deg, var(--cream) 0%, #e8dfc8 100%);
+            color: var(--earth-dark);
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        header {
+            background: var(--earth-dark);
+            color: var(--cream);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+        h1 { font-family: 'IBM Plex Mono', monospace; font-size: 2rem; margin-bottom: 0.5rem; }
+        .subtitle { opacity: 0.8; font-family: 'IBM Plex Mono', monospace; }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 12px var(--shadow);
+        }
+        .card h2 {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--wheat);
+        }
+        .form-grid { display: grid; gap: 1rem; }
+        @media (min-width: 640px) {
+            .form-grid { grid-template-columns: repeat(2, 1fr); }
+            .form-grid .full-width { grid-column: 1 / -1; }
+        }
+        .form-group { display: flex; flex-direction: column; }
+        label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--earth-medium);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+        input, select, textarea {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1rem;
+            padding: 0.75rem;
+            border: 2px solid var(--wheat);
+            border-radius: 8px;
+            background: var(--cream);
+        }
+        textarea { min-height: 120px; font-family: 'IBM Plex Mono', monospace; }
+        button {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: var(--earth-dark);
+            color: var(--cream);
+            text-transform: uppercase;
+        }
+        button:hover { background: var(--earth-medium); }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 2px solid var(--wheat);
+            text-align: center;
+        }
+        .stat-value {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+        .stat-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--earth-medium);
+            margin-top: 0.5rem;
+            text-transform: uppercase;
+        }
+        .tab-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--wheat);
+        }
+        .tab-btn {
+            font-family: 'IBM Plex Mono', monospace;
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--earth-medium);
+            cursor: pointer;
+            margin-bottom: -2px;
+        }
+        .tab-btn.active {
+            color: var(--earth-dark);
+            border-bottom-color: var(--earth-dark);
+            font-weight: 600;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .timeline-item {
+            background: white;
+            border-left: 4px solid var(--earth-medium);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+        .timeline-date {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.875rem;
+            color: var(--earth-medium);
+            font-weight: 600;
+        }
+        .timeline-field {
+            background: var(--wheat);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .loading { text-align: center; padding: 2rem; color: var(--earth-medium); }
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌾 CFFBase</h1>
+            <div class="subtitle">Caney Fork Farms • Multi-User Seeding Records</div>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalRecords">0</div>
+                <div class="stat-label">Total Records</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalAcres">0</div>
+                <div class="stat-label">Acres Planted</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="activeFields">0</div>
+                <div class="stat-label">Active Fields</div>
+            </div>
+        </div>
+
+        <div id="messageArea"></div>
+
+        <div class="tab-buttons">
+            <button class="tab-btn active" onclick="switchTab('new-record')">New Record</button>
+            <button class="tab-btn" onclick="switchTab('timeline')">Timeline</button>
+        </div>
+
+        <div id="new-record-tab" class="tab-content active">
+            <div class="card">
+                <h2>Record New Activity</h2>
+                <form id="seedingForm" class="form-grid">
+                    <div class="form-group">
+                        <label for="date">Date *</label>
+                        <input type="date" id="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="time">Time</label>
+                        <input type="time" id="time">
+                    </div>
+                    <div class="form-group">
+                        <label for="activity">Activity *</label>
+                        <select id="activity" required>
+                            <option value="planting">Planting</option>
+                            <option value="harvest">Harvest</option>
+                            <option value="equipment">Equipment</option>
+                            <option value="amendment">Amendment</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="field">Field *</label>
+                        <input type="text" id="field" placeholder="Field 7" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="crop">Crop</label>
+                        <input type="text" id="crop" placeholder="Wheat">
+                    </div>
+                    <div class="form-group">
+                        <label for="acres">Acres</label>
+                        <input type="number" id="acres" step="0.1" placeholder="12.5">
+                    </div>
+                    <div class="form-group">
+                        <label for="worker">Worker</label>
+                        <input type="text" id="worker" placeholder="Name">
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="notes">Notes</label>
+                        <textarea id="notes" placeholder="Equipment settings, weather, issues..."></textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <button type="submit">Save Record</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="timeline-tab" class="tab-content">
+            <div class="card">
+                <h2>Activity Timeline</h2>
+                <div id="timeline" class="loading">Loading records...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+        let records = [];
+
+        document.getElementById('date').valueAsDate = new Date();
+
+        document.getElementById('seedingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const record = {
+                date: document.getElementById('date').value,
+                time: document.getElementById('time').value,
+                activity: document.getElementById('activity').value,
+                field: document.getElementById('field').value,
+                crop: document.getElementById('crop').value,
+                acres: document.getElementById('acres').value || null,
+                worker: document.getElementById('worker').value,
+                notes: document.getElementById('notes').value,
+                timestamp: new Date().toISOString()
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/api/records`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(record)
+                });
+
+                if (response.ok) {
+                    showMessage('✓ Record saved successfully!');
+                    document.getElementById('seedingForm').reset();
+                    document.getElementById('date').valueAsDate = new Date();
+                    await loadRecords();
+                    switchTab('timeline');
+                }
+            } catch (error) {
+                showMessage('Error saving record');
+            }
+        });
+
+        async function loadRecords() {
+            try {
+                const response = await fetch(`${API_URL}/api/records`);
+                const data = await response.json();
+                records = data.records || [];
+                renderTimeline();
+                updateStats();
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        function renderTimeline() {
+            const timeline = document.getElementById('timeline');
+            if (records.length === 0) {
+                timeline.innerHTML = '<p class="loading">No records yet. Add your first activity!</p>';
+                return;
+            }
+            timeline.innerHTML = records.map(r => `
+                <div class="timeline-item">
+                    <div class="timeline-header">
+                        <span class="timeline-date">${r.date} ${r.time || ''}</span>
+                        <span class="timeline-field">${r.field || 'No Field'}</span>
+                    </div>
+                    <strong>${r.activity}</strong>
+                    ${r.crop ? ' • ' + r.crop : ''}
+                    ${r.acres ? ' • ' + r.acres + ' acres' : ''}
+                    ${r.worker ? ' • ' + r.worker : ''}
+                    ${r.notes ? '<br><br>' + r.notes : ''}
+                </div>
+            `).join('');
+        }
+
+        function updateStats() {
+            document.getElementById('totalRecords').textContent = records.length;
+            const totalAcres = records.reduce((sum, r) => sum + (parseFloat(r.acres) || 0), 0);
+            document.getElementById('totalAcres').textContent = totalAcres.toFixed(1);
+            const fields = new Set(records.map(r => r.field).filter(Boolean));
+            document.getElementById('activeFields').textContent = fields.size;
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(tab + '-tab').classList.add('active');
+            if (tab === 'timeline') loadRecords();
+        }
+
+        function showMessage(msg) {
+            const area = document.getElementById('messageArea');
+            area.innerHTML = `<div class="success-message">${msg}</div>`;
+            setTimeout(() => area.innerHTML = '', 3000);
+        }
+
+        loadRecords();
+        setInterval(loadRecords, 30000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFFBase - Multi-User Seeding Records</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Crimson+Pro:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --earth-dark: #2c3e28;
+            --earth-medium: #4a6741;
+            --earth-light: #7a9971;
+            --wheat: #d4b896;
+            --cream: #f5f1e8;
+            --clay: #a67c52;
+            --shadow: rgba(44, 62, 40, 0.1);
+        }
+
+        body {
+            font-family: 'Crimson Pro', serif;
+            background: linear-gradient(135deg, var(--cream) 0%, #e8dfc8 100%);
+            color: var(--earth-dark);
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: var(--earth-dark);
+            color: var(--cream);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px var(--shadow);
+            position: relative;
+        }
+
+        h1 {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.8;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .online-status {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #28a745;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        .status-dot.offline {
+            background: #dc3545;
+            animation: none;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 12px var(--shadow);
+            border: 1px solid rgba(122, 153, 113, 0.2);
+        }
+
+        .card h2 {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 1.5rem;
+            color: var(--earth-dark);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--wheat);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+        }
+
+        @media (min-width: 640px) {
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .form-grid .full-width {
+                grid-column: 1 / -1;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--earth-medium);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        input, select, textarea {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1rem;
+            padding: 0.75rem;
+            border: 2px solid var(--wheat);
+            border-radius: 8px;
+            background: var(--cream);
+            color: var(--earth-dark);
+            transition: all 0.2s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--earth-medium);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(122, 153, 113, 0.1);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        button {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-primary {
+            background: var(--earth-dark);
+            color: var(--cream);
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background: var(--earth-medium);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .btn-secondary {
+            background: var(--wheat);
+            color: var(--earth-dark);
+        }
+
+        .btn-secondary:hover {
+            background: var(--clay);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 2px solid var(--wheat);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--earth-dark);
+        }
+
+        .stat-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--earth-medium);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.5rem;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--wheat);
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            font-family: 'IBM Plex Mono', monospace;
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--earth-medium);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: -2px;
+        }
+
+        .tab-btn.active {
+            color: var(--earth-dark);
+            border-bottom-color: var(--earth-dark);
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .timeline-item {
+            background: white;
+            border-left: 4px solid var(--earth-medium);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .timeline-date {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.875rem;
+            color: var(--earth-medium);
+            font-weight: 600;
+        }
+
+        .timeline-field {
+            background: var(--wheat);
+            color: var(--earth-dark);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--earth-medium);
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌾 CFFBase</h1>
+            <div class="subtitle">Caney Fork Farms • Multi-User Seeding Records</div>
+            <div class="online-status">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">Connected</span>
+            </div>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalRecords">0</div>
+                <div class="stat-label">Total Records</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalAcres">0</div>
+                <div class="stat-label">Acres Planted</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="activeFields">0</div>
+                <div class="stat-label">Active Fields</div>
+            </div>
+        </div>
+
+        <div id="messageArea"></div>
+
+        <div class="tab-buttons">
+            <button class="tab-btn active" onclick="switchTab('new-record')">New Record</button>
+            <button class="tab-btn" onclick="switchTab('timeline')">Timeline</button>
+        </div>
+
+        <div id="new-record-tab" class="tab-content active">
+            <div class="card">
+                <h2>Record New Activity</h2>
+                <form id="seedingForm" class="form-grid">
+                    <div class="form-group">
+                        <label for="date">Date *</label>
+                        <input type="date" id="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="activity">Activity *</label>
+                        <select id="activity" required>
+                            <option value="planting">Planting</option>
+                            <option value="harvest">Harvest</option>
+                            <option value="equipment">Equipment</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="field">Field *</label>
+                        <input type="text" id="field" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="crop">Crop</label>
+                        <input type="text" id="crop">
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="notes">Notes</label>
+                        <textarea id="notes"></textarea>
+                    </div>
+                    <div class="button-group full-width">
+                        <button type="submit" class="btn-primary">Save Record</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="timeline-tab" class="tab-content">
+            <div class="card">
+                <h2>Activity Timeline</h2>
+                <div id="timeline" class="loading">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+        let records = [];
+
+        document.getElementById('date').valueAsDate = new Date();
+
+        document.getElementById('seedingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const record = {
+                date: document.getElementById('date').value,
+                activity: document.getElementById('activity').value,
+                field: document.getElementById('field').value,
+                crop: document.getElementById('crop').value,
+                notes: document.getElementById('notes').value,
+                timestamp: new Date().toISOString()
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/api/records`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(record)
+                });
+
+                if (response.ok) {
+                    showMessage('Record saved!', 'success');
+                    document.getElementById('seedingForm').reset();
+                    document.getElementById('date').valueAsDate = new Date();
+                    await loadRecords();
+                }
+            } catch (error) {
+                showMessage('Error saving record', 'error');
+            }
+        });
+
+        async function loadRecords() {
+            try {
+                const response = await fetch(`${API_URL}/api/records`);
+                const data = await response.json();
+                records = data.records || [];
+                renderTimeline();
+                updateStats();
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        function renderTimeline() {
+            const timeline = document.getElementById('timeline');
+            if (records.length === 0) {
+                timeline.innerHTML = '<p class="loading">No records yet. Add your first one!</p>';
+                return;
+            }
+            timeline.innerHTML = records.map(r => `
+                <div class="timeline-item">
+                    <div class="timeline-header">
+                        <span class="timeline-date">${r.date}</span>
+                        <span class="timeline-field">${r.field}</span>
+                    </div>
+                    <strong>${r.activity}</strong> ${r.crop ? '• ' + r.crop : ''}
+                    ${r.notes ? '<br>' + r.notes : ''}
+                </div>
+            `).join('');
+        }
+
+        function updateStats() {
+            document.getElementById('totalRecords').textContent = records.length;
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(tab + '-tab').classList.add('active');
+            if (tab === 'timeline') loadRecords();
+        }
+
+        function showMessage(msg, type) {
+            const area = document.getElementById('messageArea');
+            area.innerHTML = `<div class="${type}-message">${msg}</div>`;
+            setTimeout(() => area.innerHTML = '', 3000);
+        }
+
+        loadRecords();
+        setInterval(loadRecords, 30000);
+    </script>
+</body>
+</html>
